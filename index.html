@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💌</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&family=Caveat:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --pink: #ff3366;
+            --rose: #ff1a4a;
+            --blush: #ff6b8a;
+            --hot: #ff0044;
+            --deep: #cc0033;
+            --glow: rgba(255, 51, 102, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0f;
+            font-family: 'Comfortaa', sans-serif;
+            color: #fff;
+            overflow: hidden;
+            min-height: 100vh;
+            cursor: default;
+        }
+
+
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+
+        #trailCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+
+        .screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+        }
+
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+
+        .welcome-title {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(3rem, 8vw, 6rem);
+            background: linear-gradient(135deg, var(--blush), var(--pink), var(--hot));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            animation: fadeInUp 1.5s ease forwards;
+            opacity: 0;
+        }
+
+        .welcome-sub {
+            font-size: clamp(1rem, 2.5vw, 1.4rem);
+            color: rgba(255, 200, 210, 0.7);
+            margin-top: 1rem;
+            animation: fadeInUp 1.5s ease 0.4s forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        .btn {
+            padding: 14px 40px;
+            border: 2px solid var(--pink);
+            background: transparent;
+            color: var(--blush);
+            font-family: 'Comfortaa', sans-serif;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 2.5rem;
+            transition: all 0.3s ease;
+            animation: fadeInUp 1.5s ease 0.8s forwards;
+            opacity: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: var(--pink);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+            z-index: -1;
+        }
+
+        .btn:hover {
+            color: #fff;
+            border-color: var(--hot);
+            box-shadow: 0 0 30px var(--glow), 0 0 60px rgba(255, 51, 102, 0.2);
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+
+        .envelope-wrap {
+            perspective: 800px;
+            cursor: pointer;
+        }
+
+        .envelope {
+            width: clamp(260px, 50vw, 380px);
+            height: clamp(180px, 35vw, 260px);
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .envelope-body {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid rgba(255, 51, 102, 0.3);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .envelope-body::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 40%, rgba(255, 51, 102, 0.05) 100%);
+        }
+
+        .envelope-heart {
+            font-size: 3rem;
+            filter: drop-shadow(0 0 20px var(--glow));
+            animation: envelopePulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes envelopePulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+        }
+
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: linear-gradient(180deg, #1f1f3a, #1a1a2e);
+            border: 2px solid rgba(255, 51, 102, 0.3);
+            border-radius: 8px 8px 0 0;
+            transform-origin: top center;
+            transition: transform 1s ease;
+            clip-path: polygon(0 0, 50% 100%, 100% 0);
+            z-index: 2;
+        }
+
+        .envelope.opened .envelope-flap {
+            transform: rotateX(180deg);
+        }
+
+        .envelope-letter {
+            position: absolute;
+            width: 85%;
+            background: linear-gradient(135deg, #2a1a2e, #1e1028);
+            border: 1px solid rgba(255, 100, 140, 0.2);
+            border-radius: 6px;
+            padding: 1.5rem;
+            text-align: center;
+            font-family: 'Caveat', cursive;
+            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+            color: var(--blush);
+            bottom: 10%;
+            transition: transform 1s ease 0.3s, opacity 0.8s ease 0.5s;
+            transform: translateY(0);
+            opacity: 0;
+            z-index: 1;
+        }
+
+        .envelope.opened .envelope-letter {
+            transform: translateY(-120%);
+            opacity: 1;
+        }
+
+        .envelope-hint {
+            margin-top: 1.5rem;
+            color: rgba(255, 200, 210, 0.4);
+            font-size: 0.85rem;
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 0.4;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+
+        .game-area {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .game-ui {
+            position: absolute;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 20;
+        }
+
+        .game-title {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            color: var(--blush);
+        }
+
+        .game-score {
+            font-size: 1.2rem;
+            color: rgba(255, 200, 210, 0.7);
+            margin-top: 0.5rem;
+        }
+
+        .game-score span {
+            color: var(--pink);
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .falling-heart {
+            position: absolute;
+            font-size: 2rem;
+            cursor: pointer;
+            user-select: none;
+            filter: drop-shadow(0 0 10px var(--glow));
+            transition: transform 0.15s ease;
+            z-index: 15;
+        }
+
+        .falling-heart:hover {
+            transform: scale(1.3);
+        }
+
+        .catch-pop {
+            position: absolute;
+            font-family: 'Caveat', cursive;
+            font-size: 1.5rem;
+            color: var(--pink);
+            pointer-events: none;
+            animation: popUp 0.8s ease forwards;
+            z-index: 30;
+        }
+
+        @keyframes popUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-60px) scale(1.5);
+            }
+        }
+
+        .quiz-wrap {
+            text-align: center;
+            max-width: 600px;
+            padding: 0 2rem;
+        }
+
+        .quiz-question {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(1.6rem, 4vw, 2.5rem);
+            color: var(--blush);
+            margin-bottom: 2rem;
+            min-height: 4rem;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .quiz-option {
+            padding: 12px 28px;
+            border: 2px solid rgba(255, 51, 102, 0.3);
+            background: rgba(255, 51, 102, 0.05);
+            color: var(--blush);
+            font-family: 'Comfortaa', sans-serif;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--pink);
+            background: rgba(255, 51, 102, 0.15);
+            box-shadow: 0 0 20px var(--glow);
+        }
+
+        .quiz-option.correct {
+            border-color: #44ff88;
+            background: rgba(68, 255, 136, 0.15);
+            color: #88ffc0;
+            box-shadow: 0 0 20px rgba(68, 255, 136, 0.3);
+        }
+
+        .quiz-option.wrong {
+            border-color: rgba(255, 51, 102, 0.5);
+            background: rgba(255, 51, 102, 0.1);
+            opacity: 0.5;
+        }
+
+        .quiz-progress {
+            margin-top: 2rem;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .quiz-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 51, 102, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .quiz-dot.done {
+            background: var(--pink);
+            box-shadow: 0 0 10px var(--glow);
+        }
+
+        .quiz-dot.active {
+            background: var(--blush);
+            transform: scale(1.3);
+        }
+
+
+        .val-question {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(2rem, 6vw, 4rem);
+            text-align: center;
+            background: linear-gradient(135deg, var(--blush), var(--pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .val-buttons {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2.5rem;
+            align-items: center;
+        }
+
+        .btn-yes {
+            padding: 16px 50px;
+            border: none;
+            background: linear-gradient(135deg, var(--pink), var(--hot));
+            color: #fff;
+            font-family: 'Comfortaa', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px var(--glow);
+        }
+
+        .btn-yes:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 35px rgba(255, 51, 102, 0.6);
+        }
+
+        .btn-no {
+            padding: 12px 36px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: 'Comfortaa', sans-serif;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: absolute;
+        }
+
+
+        #heartCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+        }
+
+        .finale-text {
+            position: relative;
+            z-index: 11;
+            text-align: center;
+        }
+
+        .finale-title {
+            font-family: 'Caveat', cursive;
+            font-size: clamp(2.5rem, 7vw, 5rem);
+            background: linear-gradient(135deg, #ff99aa, var(--pink), var(--hot));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 1.5s ease forwards;
+            opacity: 0;
+        }
+
+        .finale-sub {
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            color: rgba(255, 200, 210, 0.6);
+            margin-top: 1rem;
+            animation: fadeInUp 1.5s ease 0.5s forwards;
+            opacity: 0;
+        }
+
+
+        .confetti-piece {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--pink), var(--hot));
+            box-shadow: 0 0 10px var(--glow);
+            z-index: 50;
+            transition: width 0.8s ease;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <canvas id="bgCanvas"></canvas>
+
+
+    <canvas id="trailCanvas"></canvas>
+
+
+    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+
+
+    <div class="screen active" id="screen1">
+        <div class="welcome-title">У меня есть кое-что для тебя… 💌</div>
+        <div class="welcome-sub">это не займёт много времени, обещаю</div>
+        <button class="btn" onclick="goTo(2)">Открыть</button>
+    </div>
+
+
+    <div class="screen" id="screen2">
+        <div class="envelope-wrap" onclick="openEnvelope()">
+            <div class="envelope" id="envelope">
+                <div class="envelope-body">
+                    <div class="envelope-heart">💌</div>
+                </div>
+                <div class="envelope-flap"></div>
+                <div class="envelope-letter">
+                    Я подготовил тебе небольшое приключение... Готова?
+                </div>
+            </div>
+        </div>
+        <div class="envelope-hint" id="envHint">нажми на конверт</div>
+        <button class="btn" id="envBtn" style="display: none;" onclick="goTo(3)">Поехали! 🚀</button>
+    </div>
+
+
+    <div class="screen" id="screen3">
+        <div class="game-area" id="gameArea">
+            <div class="game-ui">
+                <div class="game-title">Лови сердечки! 💕</div>
+                <div class="game-score">Поймано: <span id="catchScore">0</span> / 15</div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="screen" id="screen4">
+        <div class="quiz-wrap">
+            <div class="quiz-question" id="quizQ"></div>
+            <div class="quiz-options" id="quizOpts"></div>
+            <div class="quiz-progress" id="quizProgress"></div>
+        </div>
+    </div>
+
+
+    <div class="screen" id="screen5">
+        <div class="val-question">Будешь моей Валентинкой? 💝</div>
+        <div class="val-buttons">
+            <button class="btn-yes" onclick="sayYes()">Да! 💖</button>
+            <button class="btn-no" id="btnNo" onmouseover="runAway()" onclick="runAway()">Нет</button>
+        </div>
+    </div>
+
+
+    <div class="screen" id="screen6">
+        <canvas id="heartCanvas"></canvas>
+        <div class="finale-text">
+            <div class="finale-title" id="finaleTitle">Я так и знал! 🥰</div>
+            <div class="finale-sub">С Днём Святого Валентина! ❤️</div>
+        </div>
+    </div>
+
+    <script>
+
+        let currentScreen = 1;
+        const totalScreens = 6;
+
+        function goTo(n) {
+            document.getElementById(`screen${currentScreen}`).classList.remove('active');
+            currentScreen = n;
+            document.getElementById(`screen${currentScreen}`).classList.add('active');
+            document.getElementById('progressBar').style.width = ((n - 1) / (totalScreens - 1) * 100) + '%';
+
+            if (n === 3) startCatchGame();
+            if (n === 4) startQuiz();
+            if (n === 5) resetNo();
+            if (n === 6) startFinale();
+        }
+
+
+        const bgC = document.getElementById('bgCanvas');
+        const bgCtx = bgC.getContext('2d');
+
+        function resizeBg() {
+            bgC.width = window.innerWidth;
+            bgC.height = window.innerHeight;
+        }
+        resizeBg();
+        window.addEventListener('resize', resizeBg);
+
+        class BgParticle {
+            constructor() { this.reset(true); }
+            reset(init = false) {
+                this.x = Math.random() * bgC.width;
+                this.y = init ? Math.random() * bgC.height : bgC.height + 10;
+                this.size = Math.random() * 2 + 0.3;
+                this.speed = Math.random() * 0.6 + 0.1;
+                this.wobble = Math.random() * Math.PI * 2;
+                this.wobbleSpeed = Math.random() * 0.012 + 0.003;
+                this.opacity = Math.random() * 0.35 + 0.05;
+                this.hue = 340 + Math.random() * 30;
+            }
+            update() {
+                this.y -= this.speed;
+                this.wobble += this.wobbleSpeed;
+                this.x += Math.sin(this.wobble) * 0.4;
+                if (this.y < -10) this.reset();
+            }
+            draw() {
+                bgCtx.save();
+                bgCtx.globalAlpha = this.opacity;
+                bgCtx.fillStyle = `hsl(${this.hue}, 100%, 65%)`;
+                bgCtx.shadowBlur = 6;
+                bgCtx.shadowColor = `hsl(${this.hue}, 100%, 50%)`;
+                bgCtx.beginPath();
+                bgCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                bgCtx.fill();
+                bgCtx.restore();
+            }
+        }
+
+        const bgParticles = Array.from({ length: 180 }, () => new BgParticle());
+
+        function animBg() {
+            bgCtx.clearRect(0, 0, bgC.width, bgC.height);
+            bgParticles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animBg);
+        }
+        animBg();
+
+
+        const trC = document.getElementById('trailCanvas');
+        const trCtx = trC.getContext('2d');
+        function resizeTr() { trC.width = window.innerWidth; trC.height = window.innerHeight; }
+        resizeTr();
+        window.addEventListener('resize', resizeTr);
+
+        const mouseTrail = [];
+        class TrailDot {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.vx = (Math.random() - 0.5) * 3;
+                this.vy = (Math.random() - 0.5) * 3;
+                this.life = 1;
+                this.decay = 0.015 + Math.random() * 0.02;
+                this.size = Math.random() * 3 + 1;
+                this.hue = 340 + Math.random() * 30;
+            }
+            update() { this.x += this.vx; this.y += this.vy; this.vy += 0.03; this.vx *= 0.98; this.life -= this.decay; }
+            draw() {
+                if (this.life <= 0) return;
+                trCtx.save();
+                trCtx.globalAlpha = this.life * 0.7;
+                trCtx.fillStyle = `hsl(${this.hue}, 100%, ${55 + this.life * 20}%)`;
+                trCtx.shadowBlur = 12;
+                trCtx.shadowColor = `hsl(${this.hue}, 100%, 50%)`;
+                trCtx.beginPath();
+                trCtx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                trCtx.fill();
+                trCtx.restore();
+            }
+        }
+
+        document.addEventListener('mousemove', e => {
+            for (let i = 0; i < 3; i++) mouseTrail.push(new TrailDot(e.clientX, e.clientY));
+            if (mouseTrail.length > 250) mouseTrail.splice(0, mouseTrail.length - 250);
+        });
+
+        function animTrail() {
+            trCtx.clearRect(0, 0, trC.width, trC.height);
+            for (let i = mouseTrail.length - 1; i >= 0; i--) {
+                mouseTrail[i].update();
+                mouseTrail[i].draw();
+                if (mouseTrail[i].life <= 0) mouseTrail.splice(i, 1);
+            }
+            requestAnimationFrame(animTrail);
+        }
+        animTrail();
+
+
+        let envelopeOpened = false;
+        function openEnvelope() {
+            if (envelopeOpened) return;
+            envelopeOpened = true;
+            document.getElementById('envelope').classList.add('opened');
+            document.getElementById('envHint').style.display = 'none';
+            setTimeout(() => {
+                const btn = document.getElementById('envBtn');
+                btn.style.display = '';
+                btn.style.animation = 'fadeInUp 0.8s ease forwards';
+                btn.style.opacity = '0';
+            }, 1200);
+        }
+
+
+        let catchScore = 0;
+        let catchInterval = null;
+        const heartEmojis = ['❤️', '💕', '💖', '💗', '💓', '💘', '💝', '🩷'];
+
+        function startCatchGame() {
+            catchScore = 0;
+            document.getElementById('catchScore').textContent = '0';
+            const area = document.getElementById('gameArea');
+            // Clear old hearts
+            area.querySelectorAll('.falling-heart, .catch-pop').forEach(el => el.remove());
+
+            if (catchInterval) clearInterval(catchInterval);
+            catchInterval = setInterval(() => {
+                if (catchScore >= 15) { clearInterval(catchInterval); return; }
+                spawnHeart();
+            }, 1000);
+        }
+
+        function spawnHeart() {
+            const area = document.getElementById('gameArea');
+            const heart = document.createElement('div');
+            heart.className = 'falling-heart';
+            heart.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+            heart.style.left = (10 + Math.random() * 80) + '%';
+            heart.style.top = '-50px';
+            heart.style.fontSize = (1.5 + Math.random() * 1.5) + 'rem';
+            area.appendChild(heart);
+
+            const duration = 6000 + Math.random() * 3000;
+            const startY = -50;
+            const endY = window.innerHeight + 50;
+            const startTime = performance.now();
+            const wobbleOffset = Math.random() * Math.PI * 2;
+
+            function fall(now) {
+                const p = (now - startTime) / duration;
+                if (p > 1 || !heart.parentElement) { heart.remove(); return; }
+                heart.style.top = (startY + (endY - startY) * p) + 'px';
+                heart.style.transform = `translateX(${Math.sin(now * 0.003 + wobbleOffset) * 30}px)`;
+                requestAnimationFrame(fall);
+            }
+            requestAnimationFrame(fall);
+
+            heart.addEventListener('click', (e) => {
+                e.stopPropagation();
+                catchScore++;
+                document.getElementById('catchScore').textContent = catchScore;
+
+                // Pop text
+                const pop = document.createElement('div');
+                pop.className = 'catch-pop';
+                pop.textContent = ['+1 💖', 'Ура!', 'Ещё!', '🎉', 'Круто!', '💕'][Math.floor(Math.random() * 6)];
+                pop.style.left = heart.style.left;
+                pop.style.top = heart.style.top;
+                area.appendChild(pop);
+                setTimeout(() => pop.remove(), 800);
+
+                heart.remove();
+
+                if (catchScore >= 15) {
+                    clearInterval(catchInterval);
+                    setTimeout(() => goTo(4), 1000);
+                }
+            });
+        }
+
+
+        const quizData = [
+            { q: 'Какой цвет ассоциируется с любовью? ❤️', opts: ['Синий', 'Красный', 'Зелёный', 'Жёлтый'], correct: 1 },
+            { q: 'Кто стреляет стрелами любви? 🏹', opts: ['Зевс', 'Купидон', 'Аполлон', 'Гермес'], correct: 1 },
+            { q: 'Какой цветок — символ любви? 🌹', opts: ['Ромашка', 'Тюльпан', 'Роза', 'Подсолнух'], correct: 2 },
+            { q: 'День Святого Валентина — это...', opts: ['14 марта', '14 февраля', '14 января', '14 апреля'], correct: 1 },
+            { q: 'Закончи: "Любовь — это..."', opts: ['Сила 💪', 'Химия 🧪', 'Всё вместе 💫', 'Магия ✨'], correct: 2 },
+        ];
+        let quizIdx = 0;
+
+        function startQuiz() {
+            quizIdx = 0;
+            showQuizQuestion();
+        }
+
+        function showQuizQuestion() {
+            const q = quizData[quizIdx];
+            document.getElementById('quizQ').textContent = q.q;
+            const optsEl = document.getElementById('quizOpts');
+            optsEl.innerHTML = '';
+            q.opts.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-option';
+                btn.textContent = opt;
+                btn.onclick = () => answerQuiz(i, btn);
+                optsEl.appendChild(btn);
+            });
+
+
+            const progEl = document.getElementById('quizProgress');
+            progEl.innerHTML = '';
+            quizData.forEach((_, i) => {
+                const dot = document.createElement('div');
+                dot.className = 'quiz-dot' + (i < quizIdx ? ' done' : '') + (i === quizIdx ? ' active' : '');
+                progEl.appendChild(dot);
+            });
+        }
+
+        function answerQuiz(i, btn) {
+            const q = quizData[quizIdx];
+            const allBtns = document.querySelectorAll('.quiz-option');
+            allBtns.forEach((b, idx) => {
+                b.style.pointerEvents = 'none';
+                if (idx === q.correct) b.classList.add('correct');
+                else if (idx === i && i !== q.correct) b.classList.add('wrong');
+            });
+
+            setTimeout(() => {
+                quizIdx++;
+                if (quizIdx >= quizData.length) {
+                    goTo(5);
+                } else {
+                    showQuizQuestion();
+                }
+            }, 1200);
+        }
+
+
+        let noSize = 1;
+        function resetNo() {
+            noSize = 1;
+            const btn = document.getElementById('btnNo');
+            btn.style.position = 'relative';
+            btn.style.transform = 'scale(1)';
+            btn.style.left = '0';
+            btn.style.top = '0';
+        }
+
+        function runAway() {
+            const btn = document.getElementById('btnNo');
+            noSize *= 0.85;
+            btn.style.position = 'relative';
+            const rx = (Math.random() - 0.5) * 300;
+            const ry = (Math.random() - 0.5) * 200;
+            btn.style.left = rx + 'px';
+            btn.style.top = ry + 'px';
+            btn.style.transform = `scale(${noSize})`;
+            if (noSize < 0.2) {
+                btn.style.display = 'none';
+            }
+            // Grow the yes button
+            const yes = document.querySelector('.btn-yes');
+            yes.style.transform = `scale(${1 + (1 - noSize) * 0.5})`;
+        }
+
+        function sayYes() {
+            goTo(6);
+        }
+
+
+        function startFinale() {
+            launchConfetti();
+            startHeartCanvas();
+        }
+
+
+        function launchConfetti() {
+            const colors = ['#ff3366', '#ff6699', '#ff99bb', '#ff1a4a', '#ffccdd', '#ff4477', '#ffffff'];
+            for (let i = 0; i < 80; i++) {
+                setTimeout(() => {
+                    const piece = document.createElement('div');
+                    piece.className = 'confetti-piece';
+                    piece.style.left = Math.random() * 100 + '%';
+                    piece.style.top = '-20px';
+                    piece.style.width = (6 + Math.random() * 8) + 'px';
+                    piece.style.height = (6 + Math.random() * 8) + 'px';
+                    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                    piece.style.opacity = '0.8';
+                    document.body.appendChild(piece);
+
+                    const duration = 2500 + Math.random() * 2000;
+                    const startT = performance.now();
+                    const endY = window.innerHeight + 30;
+                    const wobbleO = Math.random() * Math.PI * 2;
+                    const rotSpeed = (Math.random() - 0.5) * 720;
+
+                    function animC(now) {
+                        const p = (now - startT) / duration;
+                        if (p > 1) { piece.remove(); return; }
+                        piece.style.top = (p * endY) + 'px';
+                        piece.style.transform = `translateX(${Math.sin(now * 0.004 + wobbleO) * 40}px) rotate(${rotSpeed * p}deg)`;
+                        piece.style.opacity = (1 - p) * 0.8;
+                        requestAnimationFrame(animC);
+                    }
+                    requestAnimationFrame(animC);
+                }, i * 40);
+            }
+        }
+
+
+        function startHeartCanvas() {
+            const hc = document.getElementById('heartCanvas');
+            const hctx = hc.getContext('2d');
+            let W, H, cxH, cyH;
+
+            function resizeH() {
+                W = hc.width = window.innerWidth;
+                H = hc.height = window.innerHeight;
+                cxH = W / 2;
+                cyH = H / 2;
+            }
+            resizeH();
+            window.addEventListener('resize', resizeH);
+
+            function hX(t) { return 16 * Math.pow(Math.sin(t), 3); }
+            function hY(t) { return -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)); }
+
+            const LAYERS = [
+                { count: 250, sizeMin: 1.5, sizeMax: 3.5, glow: 14, alpha: 1, color: [255, 30, 60], drift: 2, speed: 0.6 },
+                { count: 180, sizeMin: 1.0, sizeMax: 2.5, glow: 22, alpha: 0.5, color: [255, 80, 110], drift: 5, speed: 0.4 },
+                { count: 120, sizeMin: 0.5, sizeMax: 1.8, glow: 30, alpha: 0.25, color: [255, 50, 80], drift: 9, speed: 0.3 },
+                { count: 80, sizeMin: 0.3, sizeMax: 1.2, glow: 40, alpha: 0.12, color: [255, 40, 70], drift: 15, speed: 0.2 },
+            ];
+
+            class HeartDot {
+                constructor(layer) {
+                    this.layer = layer;
+                    this.t = Math.random() * Math.PI * 2;
+                    this.orbitSpeed = (Math.random() - 0.5) * 0.002 * layer.speed;
+                    this.driftPhase = Math.random() * Math.PI * 2;
+                    this.driftFreq = 0.005 + Math.random() * 0.015;
+                    this.size = layer.sizeMin + Math.random() * (layer.sizeMax - layer.sizeMin);
+                    this.twinklePhase = Math.random() * Math.PI * 2;
+                    this.twinkleSpeed = 0.02 + Math.random() * 0.04;
+                }
+                update() {
+                    this.t += this.orbitSpeed;
+                    this.driftPhase += this.driftFreq;
+                    this.twinklePhase += this.twinkleSpeed;
+                }
+                draw(scale, alpha) {
+                    const drift = Math.sin(this.driftPhase) * this.layer.drift;
+                    const nx = hX(this.t), ny = hY(this.t);
+                    const dt = 0.01;
+                    const dx = hX(this.t + dt) - nx;
+                    const dy = hY(this.t + dt) - ny;
+                    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+                    const normX = -dy / len, normY = dx / len;
+                    const x = cxH + nx * scale + normX * drift;
+                    const y = cyH + ny * scale + normY * drift - 20;
+                    const tw = 0.5 + 0.5 * Math.sin(this.twinklePhase);
+                    const fa = alpha * this.layer.alpha * (0.4 + 0.6 * tw);
+                    const c = this.layer.color;
+                    hctx.save();
+                    hctx.globalAlpha = fa;
+                    hctx.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`;
+                    hctx.shadowBlur = this.layer.glow * tw;
+                    hctx.shadowColor = `rgba(${c[0]},${c[1]},${c[2]},${fa})`;
+                    hctx.beginPath();
+                    hctx.arc(x, y, this.size * (0.7 + 0.3 * tw), 0, Math.PI * 2);
+                    hctx.fill();
+                    hctx.restore();
+                }
+            }
+
+            const dots = [];
+            LAYERS.forEach(l => { for (let i = 0; i < l.count; i++) dots.push(new HeartDot(l)); });
+
+            function easeOutElastic(t) {
+                if (t === 0 || t === 1) return t;
+                return Math.pow(2, -10 * t) * Math.sin((t - 0.075) * 2 * Math.PI / 0.3) + 1;
+            }
+            function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+            const startT = performance.now();
+
+            function animH(now) {
+                const elapsed = now - startT;
+                hctx.clearRect(0, 0, W, H);
+                const baseScale = Math.min(W, H) * 0.022;
+
+
+                let scale, alpha;
+                if (elapsed < 2000) {
+                    const t = elapsed / 2000;
+                    scale = easeOutElastic(t) * baseScale;
+                    alpha = easeOutCubic(t);
+                } else {
+                    const breathe = 1 + 0.04 * Math.sin((elapsed - 2000) * 0.003);
+                    scale = breathe * baseScale;
+                    alpha = 1;
+                }
+
+
+                if (alpha > 0.01) {
+                    const gr = hctx.createRadialGradient(cxH, cyH - 20, 0, cxH, cyH - 20, scale * 16);
+                    gr.addColorStop(0, `rgba(150,0,25,${0.12 * alpha})`);
+                    gr.addColorStop(0.5, `rgba(80,0,15,${0.05 * alpha})`);
+                    gr.addColorStop(1, 'rgba(0,0,0,0)');
+                    hctx.fillStyle = gr;
+                    hctx.fillRect(0, 0, W, H);
+                }
+
+                dots.forEach(d => { d.update(); d.draw(scale, alpha); });
+                requestAnimationFrame(animH);
+            }
+            requestAnimationFrame(animH);
+        }
+    </script>
+</body>
+
+</html>
